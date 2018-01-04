@@ -1,0 +1,225 @@
+<html>
+<head>
+<style>
+body {
+  background: #000;
+  color: #fff;
+  text-align: center;
+  font-family: sans-serif;
+  line-height: 150%;
+}
+#main {
+  text-align: left;
+  max-width: 800px;
+  margin: 20px auto;
+}
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #bbb;
+  margin-bottom: 24px;
+}
+td, th {
+  padding: 8px;
+  border: 1px solid #bbb;
+  text-align: center;
+  width: 150px;
+}
+td.icon {
+  font-size: 50pt;
+  color: #247dd0;
+}
+a {
+  color: #f80;
+}
+.blue {
+  color: #247dd0;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div id="main">
+<h1>Taktyka</h1>
+<p>Welcome to <strong>Taktyka</strong>!<p>
+
+<p>Taktyka is a <strong>turn-based tactical game</strong> inspired by <a href="">Jagged Alliance</a>.  
+Taktyka is an entry for <a href="http://gynvael.coldwind.pl/?id=668">Gynvael's Winter GameDev Challenge 2017</a>
+(<a href="https://www.reddit.com/r/gamedev/comments/7j6w04/a_20kb_js_tactical_turnbase_gamedev_competition/">reddit</a>).</p>
+
+<p>Two teams of six units fight to the death on a 24x24 board.</p>
+
+<p>You play as the <span class="blue">blue</span> team.</p>
+
+<p>You must protect your <strong>General</strong>!  When your <strong>General</strong> dies, you lose.</p>
+
+<hr>
+
+<h2>How to play</h2>
+
+<p>Each turn you must strategically spend <strong>action points</strong>.  
+Use action points to <strong>move</strong> or <strong>attack</strong>.</p>
+
+<p>Each unit has a maximum of 4 action points.  At the beginning of each turn, all 4 action points will be replenished.
+Any remaining action points are lost at the end of a turn.  Use it or lose it!</p>
+
+<p><strong>Click</strong> on a unit to select.</p>
+
+<p>When a unit is selected, click on a yellow tile to move to that tile.  Moving costs one <strong>action point</strong> per tile.
+Each individual move is restricted to the four cardinal directions (north, east, south, west).</p>
+
+<p>Use the early turns to find cover.  It is only a matter of time before you will encounter the enemy.</p>
+
+<p>When a unit is selected, click on an enemy highlighted in green to attack that enemy.  Attack costs vary by weapon:</p>
+
+<ul>
+<li><strong>Melee</strong>, <strong>pistol</strong>, and <strong>assault rifle</strong> cost one point per attack</li>
+<li><strong>Grenades</strong> cost two <strong>action points</strong></li>
+<li>The <strong>sniper rifle</strong> and <strong>rocket launcher</strong> cost four <strong>action points</strong> per shot</li>
+</ul>
+
+<hr>
+
+<h2>User Interface</h2>
+
+<p>The main interface is separated into two components:</p>
+
+<ul>
+<li><strong>Control Panel</strong> on the left</li>
+<li><strong>Map</strong> on the right</li>
+</ul>
+
+<p style="text-align:center"><img src="img/overview.png"></p>
+
+<hr>
+
+<h2>Control Panel</h2>
+
+<p>Each of your units is visible on the control panel.</p>
+
+<p style="text-align:center"><img src="img/cp-unit.png"></p>
+
+<ul>
+<li>Click on the unit avatar to select the unit</li>
+<li>Click on weapons to change the active weapon</li>
+</ul>
+
+<p>There are 3 special buttons at the bottom of the control panel:</p>
+
+<p style="text-align:center"><img src="img/cp-buttons.png"></p>
+
+<ul>
+<li>End Turn - Ends your current turn and let's the AI begin</li>
+<li>Fullscreen - Enters fullscreen mode</li>
+<li>Toggle Music - Turns the music on and off</li>
+</ul>
+
+<hr>
+
+<h2>Map</h2>
+
+<p>Tiles are either <strong>empty</strong> or have a <strong>wall</strong>.  Units can walk on empty tiles.</p>
+
+<p>When a unit is selected, tiles are highlighted with available actions:</p>
+
+<p style="text-align:center"><img src="img/mapkey.png"></p>
+
+<hr>
+
+<h2>Characters</h2>
+
+<p>Here is your team:</p>
+
+<table>
+<tr>
+  <td class="icon">&#9818;</td>
+  <td>General</td>
+  <td>None</td>
+  <td>None</td>
+<tr>
+<tr>
+  <td class="icon">&#9819;</td>
+  <td>Stella</td>
+  <td><img src="img/sniper.png"><br>Sniper Rifle</td>
+  <td><img src="img/pistol.png"><br>Pistol</td>
+<tr>
+<tr>
+  <td class="icon">&#9820;</td>
+  <td>Tex</td>
+  <td><img src="img/rocket.png"><br>Rocket Launcher</td>
+  <td><img src="img/pistol.png"><br>Pistol</td>
+<tr>
+<tr>
+  <td class="icon">&#9821;</td>
+  <td>Spike</td>
+  <td><img src="img/rocket.png"><br>Rocket Launcher</td>
+  <td><img src="img/grenade.png"><br>Hand Grenade</td>
+<tr>
+<tr>
+  <td class="icon">&#9822;</td>
+  <td>Biff</td>
+  <td><img src="img/ak47.png"><br>Assault Rifle</td>
+  <td><img src="img/grenade.png"><br>Hand Grenade</td>
+<tr>
+<tr>
+  <td class="icon">&#9823;</td>
+  <td>Mike</td>
+  <td><img src="img/ak47.png"><br>Assault Rifle</td>
+  <td><img src="img/pistol.png"><br>Pistol</td>
+<tr>
+</table>
+
+<hr>
+
+<h2>Weapons</h2>
+
+<p>Weapons have different attributes that make them better/worse for different situations:</p>
+
+<ul>
+<li><strong>Action Points</strong> - how many AP to fire one shot</li>
+<li><strong>Range</strong> - how far away an enemy can be</li>
+<li><strong>Damage</strong> - how many health points an enemy will lose</li>
+</ul>
+
+<table>
+<tr>
+  <th>Name</th>
+  <th>Action Points</th>
+  <th>Range (tiles)</th>
+  <th>Damage</th>
+</tr>
+<tr>
+  <td><img src="img/pistol.png"><br>Pistol</td>
+  <td>1</td>
+  <td>8</td>
+  <td>25</td>
+</tr>
+<tr>
+  <td><img src="img/grenade.png"><br>Hand Grenade</td>
+  <td>2</td>
+  <td>4</td>
+  <td>50</td>
+</tr>
+<tr>
+  <td><img src="img/ak47.png"><br>Assault Rifle</td>
+  <td>2</td>
+  <td>12</td>
+  <td>20</td>
+</tr>
+<tr>
+  <td><img src="img/rocket.png"><br>Rocket Launcher</td>
+  <td>4</td>
+  <td>12</td>
+  <td>50</td>
+</tr>
+<tr>
+  <td><img src="img/sniper.png"><br>Sniper Rifle</td>
+  <td>4</td>
+  <td>16</td>
+  <td>75</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
