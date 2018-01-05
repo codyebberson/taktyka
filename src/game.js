@@ -792,6 +792,9 @@ function doAi2(unit) {
 }
 
 function doAi3(unit) {
+    // Choose "best" weapon
+    chooseWeapon(unit);
+
     // If the AI can see a player, attack the player
     for (var i = 0; i < 6; i++) {
         if (attack(unit, units[i])) {
@@ -854,6 +857,34 @@ function doAiHide(unit) {
         // No danger, so just continue as normal
         return doAi3(unit);
     }
+}
+
+function chooseWeapon(unit) {
+    var bestIndex = 0;
+    var bestDamage = 0;
+
+    for (var i = 0; i < unit.weapons.length; i++) {
+        var weapon = WEAPONS[unit.weapons[i]];
+        var ap = weapon[2];
+        var damage = weapon[4];
+
+        if (unit.ammo[i] <= 0) {
+            // Ignore out of ammo
+            continue;
+        }
+
+        if (ap > unit.actionPoints) {
+            // Ignore out of AP
+            continue;
+        }
+
+        if (damage > bestDamage) {
+            bestIndex = i;
+            bestDamage = damage;
+        }
+    }
+
+    unit.currWeapon = bestIndex;
 }
 
 function dijkstra(source, dest) {
