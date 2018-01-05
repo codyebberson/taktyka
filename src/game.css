@@ -390,6 +390,10 @@ a {
   font-weight: bold;
 }
 
+#go h1 {
+  text-shadow: 1px 1px 8px #000;
+}
+
 #go table {
   width: 300px;
   margin:auto;
@@ -397,7 +401,7 @@ a {
   border-top: 1px solid white;
 }
 
-#go h1, #go th, #go td {
+#go th, #go td {
   padding: 5px 16px;
   border-bottom: 1px solid white;
   text-shadow: 1px 1px 8px #000;

@@ -191,12 +191,23 @@ function initUnits() {
     }
 
     // Waypoints - hardcoded for this particular map
-    units[6].waypoints = [ xy(23, 15) ];
     units[7].waypoints = [ xy(4, 19), xy(4, 4), xy(4, 19), xy(19, 19) ];
     units[8].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
     units[9].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
     units[10].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
     units[11].waypoints = [ xy(4, 4), xy(19, 19) ];
+
+    // Enemy general gets a random starting point
+    var r = Math.random();
+    if (r > 0.75) {
+        units[6].waypoints = [ xy(23, 15) ];
+    } else if (r > 0.5) {
+        units[6].waypoints = [ xy(23, 11) ];
+    } else if (r > 0.25) {
+        units[6].waypoints = [ xy(15, 23) ];
+    } else {
+        units[6].waypoints = [ xy(11, 23) ];
+    }
 }
 
 function xy(x, y) {
@@ -707,12 +718,21 @@ function attack(unit, target) {
 function calcAiDanger(x, y) {
     var count = 0;
 
+    // Temporarily move the current unit from the board
+    // Need to do this for accurate "can see" calculation
+    var cell = map[y][x];
+    var temp = cell.unit;
+    cell.unit = null;
+
     for (var i = 0; i < 6; i++) {
         var unit = units[i];
         if (unit.health > 0 && canSee(unit, x, y)) {
             count++;
         }
     }
+
+    // Put the unit back on the board
+    cell.unit = temp;
 
     return count;
 }
@@ -785,7 +805,7 @@ function doAi2(unit) {
 
     selectUnit(unit);
 
-    if (unit.actionPoints > 1) {
+    if (unit.actionPoints > 1 && !unit.general) {
         // Spend the first 3 action points attack or moving to destination
         return doAi3(unit);
     } else {
@@ -834,20 +854,24 @@ function doAi3(unit) {
 function doAiHide(unit) {
     var xs = [0, 0, 1, 0, -1];
     var ys = [0, -1, 0, 1, 0];
-    var minDanger = 10;
+    var minDanger = Infinity;
     var minDangerIndex = -1;
+    var anyDanger = false;
 
     for (var i = 0; i < 5; i++) {
-        if (canMove(unit, unit.x + xs[i], unit.y + ys[i])) {
+        if (i === 0 || canMove(unit, unit.x + xs[i], unit.y + ys[i])) {
             var danger = calcAiDanger(unit.x + xs[i], unit.y + ys[i]);
             if (danger < minDanger) {
                 minDanger = danger;
                 minDangerIndex = i;
             }
+            if (danger > 0) {
+                anyDanger = true;
+            }
         }
     }
 
-    if (minDangerIndex >= 0 && minDanger > 0) {
+    if (minDangerIndex >= 0 && anyDanger) {
         var targetX = unit.x + xs[minDangerIndex];
         var targetY = unit.y + ys[minDangerIndex];
         var moveResult = move(unit, targetX, targetY);
