@@ -709,32 +709,29 @@ function attack(unit, target) {
 /**
  * Calculates a "danger" score of a tile.
  *
- * The result is the number of visible blue team units that can see the tile.
+ * Danger is calculated as follows:
+ *   For each player unit
+ *     If the player can see the tile
+ *       Increment the score by max(1, 10-distance)
+ *
+ * This has the effect of "running away" to avoid tiles close to the player.
  *
  * @param {!number} x The candidate tile x-coord.
  * @param {!number} y The candidate tile y-coord.
  * @return {!number} The number of visible blue team units that can see the tile.
  */
 function calcAiDanger(x, y) {
-    var count = 0;
-
-    // Temporarily move the current unit from the board
-    // Need to do this for accurate "can see" calculation
-    var cell = map[y][x];
-    var temp = cell.unit;
-    cell.unit = null;
+    var score = 0;
 
     for (var i = 0; i < 6; i++) {
         var unit = units[i];
         if (unit.health > 0 && canSee(unit, x, y)) {
-            count++;
+            var dist = Math.hypot(unit.x - x, unit.y - y);
+            score += Math.max(1, 10 - dist);
         }
     }
 
-    // Put the unit back on the board
-    cell.unit = temp;
-
-    return count;
+    return score;
 }
 
 function endTurn() {
@@ -858,6 +855,10 @@ function doAiHide(unit) {
     var minDangerIndex = -1;
     var anyDanger = false;
 
+    // Temporarily remove the unit from the board
+    // Need to do this for accurate "can see" calculation
+    unit.td.unit = null;
+
     for (var i = 0; i < 5; i++) {
         if (i === 0 || canMove(unit, unit.x + xs[i], unit.y + ys[i])) {
             var danger = calcAiDanger(unit.x + xs[i], unit.y + ys[i]);
@@ -870,6 +871,9 @@ function doAiHide(unit) {
             }
         }
     }
+
+    // Put the unit back on the board
+    unit.td.unit = unit;
 
     if (minDangerIndex >= 0 && anyDanger) {
         var targetX = unit.x + xs[minDangerIndex];
