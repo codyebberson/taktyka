@@ -384,9 +384,9 @@ a {
   bottom: 0;
   z-index: 100;
   overflow: hidden;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.5);
   color: #FFF;
-  padding: 120px 0 0 292px;
+  padding: 100px 0 0 292px;
   font-weight: bold;
 }
 
@@ -397,7 +397,7 @@ a {
   border-top: 1px solid white;
 }
 
-#go th, #go td {
+#go h1, #go th, #go td {
   padding: 5px 16px;
   border-bottom: 1px solid white;
   text-shadow: 1px 1px 8px #000;

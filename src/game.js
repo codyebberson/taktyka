@@ -271,6 +271,9 @@ function updateMapUnits() {
  */
 function updateMap() {
     var attackRange = getCurrentWeaponRange(selectedUnit);
+    if (selectedUnit) {
+        dijkstra(selectedUnit, undefined, selectedUnit.actionPoints);
+    }
 
     for (var y = 0; y < MAP_SIZE; y++) {
         for (var x = 0; x < MAP_SIZE; x++) {
@@ -296,10 +299,10 @@ function updateMap() {
             }
 
             if (selectedUnit && selectedUnit.team) {
-                if (canMove(selectedUnit, x, y)) {
+                if (td.dist <= selectedUnit.actionPoints && canMove(selectedUnit, x, y)) {
                     // Show move targets
                     td.classList.add('movetarget');
-                    td.innerHTML = dist(selectedUnit.x, selectedUnit.y, x, y);
+                    td.innerHTML = td.dist;
                 } else if (canSee(selectedUnit, x, y)) {
                     if (dist(selectedUnit.x, selectedUnit.y, x, y) <= attackRange) {
                         td.classList.add('attack');
@@ -887,7 +890,15 @@ function chooseWeapon(unit) {
     unit.currWeapon = bestIndex;
 }
 
-function dijkstra(source, dest) {
+
+/**
+ * Calculates Dijkstra's algorithm.
+ * @param {!Object} source Starting point, must have x and y properties.
+ * @param {!Object=} opt_dest Optional destination point, must have x and y properties.
+ * @param {!number=} opt_maxDist Optional maximum distance to examine.
+ * @return {?Array} Array of steps if destination found; null otherwise.
+ */
+function dijkstra(source, opt_dest, opt_maxDist) {
     for (var y = 0; y < MAP_SIZE; y++) {
         for (var x = 0; x < MAP_SIZE; x++) {
             var cell = map[y][x];
@@ -904,7 +915,7 @@ function dijkstra(source, dest) {
     while (q.length > 0) {
         var u = getMinCell(q);
 
-        if (u.x === dest.x && u.y === dest.y) {
+        if (opt_dest && u.x === opt_dest.x && u.y === opt_dest.y) {
             return buildPath(u);
         }
 
@@ -916,7 +927,7 @@ function dijkstra(source, dest) {
             if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) {
                 var v = map[y][x];
                 var alt = u.dist + 1;
-                if (alt < v.dist && isEmpty(x, y)) {
+                if (alt < v.dist && isEmpty(x, y) && (!opt_maxDist || alt <= opt_maxDist)) {
                     v.dist = alt;
                     v.prev = u;
                     q.push(v);
@@ -924,6 +935,7 @@ function dijkstra(source, dest) {
             }
         }
     }
+    return null;
 }
 
 function getMinCell(q) {
