@@ -575,7 +575,7 @@ var loopOffset = 0.0;
  * 
  * Unfortunately, notes cannot be scheduled in the buffer too far in advance.
  * 
- * So we use a plain old JavaScript scheduler
+ * So we use a plain old JavaScript scheduler to throttle notes and prevent overflow.
  * 
  * @const {!number}
  */
