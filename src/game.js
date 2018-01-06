@@ -94,7 +94,6 @@ var cp=$('.cp');
 var units = [];
 var selectedUnit = null;
 var map = [];
-var mapStrategy = 2;
 var aiActive = false;
 var aiDelayCount = 0;
 var gameOver = false;
@@ -117,42 +116,14 @@ function initMap() {
             td.y=y;
             td.fog=true;
 
-            switch (mapStrategy) {
-            case 1:
-                //   6   3   6    3    6
-                // 0 - 6 - 9 - 15 - 18 - 24
-                // Map Strategy #1
-                // 7 big 6x6 blocks
-                if ((x >= 0 && x < 6 && y >= 9 && y < 15) ||
-                        (x >= 0 && x < 6 && y >= 18 && y < 24) ||
-                        (x >= 9 && x < 15 && y >= 0 && y < 6) ||
-                        (x >= 9 && x < 15 && y >= 9 && y < 15) ||
-                        (x >= 9 && x < 15 && y >= 18 && y < 24) ||
-                        (x >= 18 && x < 24 && y >= 0 && y < 6) ||
-                        (x >= 18 && x < 24 && y >= 9 && y < 15)) {
-                    td.wall=true;
-                }
-                break;
-
-            case 2:
-                // Map Strategy #2
-                // Scattered 2x2 blocks
-                var blockX = Math.floor((x + 1) / 2);
-                var blockY = Math.floor((y + 1) / 2);
-                if ((x + y) > 8 &&
-                        ((MAP_SIZE-1 - x) + (MAP_SIZE-1 - y)) > 8 &&
-                        (blockX % 2 == 1 && blockY % 2 == 1)) {
-                    td.wall=true;
-                }
-                break;
-
-            case 3:
-                // Map Strategy #3
-                // 2 long walls forming an "S" pattern
-                if ((x >= 0 && x < 20 && y >= 5 && y < 7) ||
-                        (x >= 4 && x < 24 && y >= 17 && y < 19)) {
-                    td.wall=true;
-                }
+            // Map Strategy #2
+            // Scattered 2x2 blocks
+            var blockX = Math.floor((x + 1) / 2);
+            var blockY = Math.floor((y + 1) / 2);
+            if ((x + y) > 8 &&
+                    ((MAP_SIZE-1 - x) + (MAP_SIZE-1 - y)) > 8 &&
+                    (blockX % 2 == 1 && blockY % 2 == 1)) {
+                td.wall=true;
             }
 
             tr.appendChild(td);
@@ -208,32 +179,17 @@ function initUnits() {
     }
 
     // All other units makes big loop either clockwise or counterclockwise
-    var r2 = Math.random();
-    if (r2 > 0.5) {
-        units[7].waypoints = [ xy(4, 19), xy(4, 4), xy(19, 4), xy(19, 19) ];
-    } else {
-        units[7].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
-    }
-
-    var r3 = Math.random();
-    if (r3 > 0.5) {
-        units[8].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
-    } else {
-        units[8].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
-    }
-
-    var r4 = Math.random();
-    if (r4 > 0.5) {
-        units[9].waypoints = [ xy(4, 19), xy(4, 4), xy(19, 4), xy(19, 19) ];
-    } else {
-        units[9].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
-    }
-
-    var r5 = Math.random();
-    if (r5 > 0.5) {
-        units[10].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
-    } else {
-        units[10].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
+    for (var i = 7; i <= 10; i++) {
+        r = Math.random();
+        if (r > 0.75) {
+            units[i].waypoints = [ xy(4, 19), xy(4, 4), xy(19, 4), xy(19, 19) ];
+        } else if (r > 0.5) {
+            units[i].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
+        } else if (r > 0.25) {
+            units[i].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
+        } else {
+            units[i].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
+        }
     }
 
     // Last unit always checks corners
