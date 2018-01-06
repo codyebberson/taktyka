@@ -390,7 +390,7 @@ a {
   font-weight: bold;
 }
 
-#go h1 {
+#go h1, #go th, #go td, #go a {
   text-shadow: 1px 1px 8px #000;
 }
 
@@ -402,9 +402,8 @@ a {
 }
 
 #go th, #go td {
-  padding: 5px 16px;
+  padding: 4px 16px;
   border-bottom: 1px solid white;
-  text-shadow: 1px 1px 8px #000;
 }
 
 #go td.blue {
@@ -413,6 +412,11 @@ a {
 
 #go td.red {
   color: #d13c39;
+}
+
+#go a {
+  color: white;
+  text-decoration: none;
 }
 
 /*

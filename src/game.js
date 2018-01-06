@@ -163,6 +163,9 @@ function initMap() {
 }
 
 function initUnits() {
+    units = [];
+    gameOver = false;
+
     for (var i = 0; i < 12; i++) {
         var u = {
                       id: i,
@@ -171,9 +174,9 @@ function initUnits() {
                        y: CHARACTERS[i][2],
                  weapons: [],
                     ammo: [],
-                       team: i < 6,
-                    general: i == 0 || i == 6,
-                     health: 100,
+                    team: i < 6,
+                 general: i == 0 || i == 6,
+                  health: 100,
             actionPoints: 4,
               currWeapon: 0,
                    kills: 0,
@@ -191,13 +194,8 @@ function initUnits() {
     }
 
     // Waypoints - hardcoded for this particular map
-    units[7].waypoints = [ xy(4, 19), xy(4, 4), xy(4, 19), xy(19, 19) ];
-    units[8].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
-    units[9].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
-    units[10].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
-    units[11].waypoints = [ xy(4, 4), xy(19, 19) ];
 
-    // Enemy general gets a random starting point
+    // General hides in one of 4 hiding spots near starting corner
     var r = Math.random();
     if (r > 0.75) {
         units[6].waypoints = [ xy(23, 15) ];
@@ -208,6 +206,38 @@ function initUnits() {
     } else {
         units[6].waypoints = [ xy(11, 23) ];
     }
+
+    // All other units makes big loop either clockwise or counterclockwise
+    var r2 = Math.random();
+    if (r2 > 0.5) {
+        units[7].waypoints = [ xy(4, 19), xy(4, 4), xy(19, 4), xy(19, 19) ];
+    } else {
+        units[7].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
+    }
+
+    var r3 = Math.random();
+    if (r3 > 0.5) {
+        units[8].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
+    } else {
+        units[8].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
+    }
+
+    var r4 = Math.random();
+    if (r4 > 0.5) {
+        units[9].waypoints = [ xy(4, 19), xy(4, 4), xy(19, 4), xy(19, 19) ];
+    } else {
+        units[9].waypoints = [ xy(19, 4), xy(4, 4), xy(4, 19), xy(19, 19) ];
+    }
+
+    var r5 = Math.random();
+    if (r5 > 0.5) {
+        units[10].waypoints = [ xy(8, 15), xy(8, 8), xy(15, 8), xy(15, 15) ];
+    } else {
+        units[10].waypoints = [ xy(15, 8), xy(8, 8), xy(8, 15), xy(15, 15) ];
+    }
+
+    // Last unit always checks corners
+    units[11].waypoints = [ xy(0, 4), xy(4, 0), xy(23, 19), xy(19, 23) ];
 }
 
 function xy(x, y) {
@@ -381,7 +411,11 @@ function buildWeaponHtml(unit, index) {
     var w = WEAPONS[unit.weapons[index]];
     var ammo = unit.ammo[index];
     var selected = unit.currWeapon == index;
-    return '<div class="cp_weapon' + (selected?' sel':'') + '" data-w="' + index + '"><img src="' + DATA_URL_PREFIX + w[1] + '" title="' + w[0] + ' (' + w[2] + ' AP, ' + w[3] + ' Range, ' + w[4] + ' Damage)"><span class="cp_ammo">' + ammo + '</span></div>';
+    return '<div class="cp_weapon' + (selected?' sel':'') + '" data-w="' + index + '">' +
+            '<img src="' + DATA_URL_PREFIX + w[1] + '"' +
+            ' title="' + w[0] + ' (' + w[2] + ' AP, ' + w[3] + ' Range, ' + w[4] + ' Damage)">' +
+            '<span class="cp_ammo">' + ammo + '</span>' +
+            '</div>';
 }
 
 /**
@@ -395,12 +429,12 @@ cp.onclick = function(e) {
     var weapon = undefined;
     while (el) {
         if (el.dataset) {
-        if (el.dataset['id'] !== undefined) {
-            id = parseInt(el.dataset['id'], 10);
-        }
-        if (el.dataset['w'] !== undefined) {
-            weapon = parseInt(el.dataset['w'], 10);
-        }
+            if (el.dataset['id'] !== undefined) {
+                id = parseInt(el.dataset['id'], 10);
+            }
+            if (el.dataset['w'] !== undefined) {
+                weapon = parseInt(el.dataset['w'], 10);
+            }
         }
         el = el.parentNode;
     }
@@ -723,7 +757,8 @@ function attack(unit, target) {
 function calcAiDanger(x, y) {
     var score = 0;
 
-    for (var i = 0; i < 6; i++) {
+    // Ignore the General (unit 0) because he can't attack
+    for (var i = 1; i < 6; i++) {
         var unit = units[i];
         if (unit.health > 0 && canSee(unit, x, y)) {
             var dist = Math.hypot(unit.x - x, unit.y - y);
@@ -761,6 +796,22 @@ var AI_HIDDEN_ACTION = 2;
 function doAi() {
     $('#ai').style.display = 'block';
     aiActive = true;
+
+    // If the blue general is visible, that becomes everyone's waypoint
+    var canSeeGeneral = false;
+    for (var i = 6; i < 12; i++) {
+        if (canSee(units[i], units[0].x, units[0].y)) {
+            canSeeGeneral = true;
+            break;
+        }
+    }
+
+    if (canSeeGeneral) {
+        for (var i = 7; i < 12; i++) {
+            units[i].currWaypoint = 0;
+            units[i].waypoints = [xy(units[0].x, units[0].y)];
+        }
+    }
 
     for (var i = 6; i < 12; i++) {
         for (var j = 0; j < 4; j++) {
@@ -812,11 +863,9 @@ function doAi2(unit) {
 }
 
 function doAi3(unit) {
-    // Choose "best" weapon
-    chooseWeapon(unit);
-
     // If the AI can see a player, attack the player
     for (var i = 0; i < 6; i++) {
+        chooseWeapon(unit, units[i]);
         if (attack(unit, units[i])) {
             return AI_VISIBLE_ACTION;
         }
@@ -852,22 +901,30 @@ function doAiHide(unit) {
     var xs = [0, 0, 1, 0, -1];
     var ys = [0, -1, 0, 1, 0];
     var minDanger = Infinity;
-    var minDangerIndex = -1;
+    var minDangerCell = null;
     var anyDanger = false;
 
     // Temporarily remove the unit from the board
     // Need to do this for accurate "can see" calculation
     unit.td.unit = null;
 
-    for (var i = 0; i < 5; i++) {
-        if (i === 0 || canMove(unit, unit.x + xs[i], unit.y + ys[i])) {
-            var danger = calcAiDanger(unit.x + xs[i], unit.y + ys[i]);
-            if (danger < minDanger) {
-                minDanger = danger;
-                minDangerIndex = i;
-            }
-            if (danger > 0) {
-                anyDanger = true;
+    dijkstra(unit, undefined, unit.actionPoints);
+
+    for (var dist = 1; dist <= 4; dist++) {
+        for (var dy = -dist; dy <= dist; dy++) {
+            for (var dx = -dist; dx <= dist; dx++) {
+                var x = unit.x + dx;
+                var y = unit.y + dy;
+                if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE && map[y][x].dist <= unit.actionPoints && ((dx === 0 && dy === 0) || canMove(unit, x, y))) {
+                    var danger = calcAiDanger(x, y);
+                    if (danger < minDanger) {
+                        minDanger = danger;
+                        minDangerCell = xy(x, y);
+                    }
+                    if (danger > 0) {
+                        anyDanger = true;
+                    }
+                }
             }
         }
     }
@@ -875,9 +932,14 @@ function doAiHide(unit) {
     // Put the unit back on the board
     unit.td.unit = unit;
 
-    if (minDangerIndex >= 0 && anyDanger) {
-        var targetX = unit.x + xs[minDangerIndex];
-        var targetY = unit.y + ys[minDangerIndex];
+    if (anyDanger) {
+        var targetX = unit.x;
+        var targetY = unit.y;
+        var path = dijkstra(unit, minDangerCell);
+        if (path && path.length >= 2) {
+            targetX = path[1].x;
+            targetY = path[1].y;
+        }
         var moveResult = move(unit, targetX, targetY);
         if (!moveResult) {
             return AI_DONE;
@@ -890,7 +952,7 @@ function doAiHide(unit) {
     }
 }
 
-function chooseWeapon(unit) {
+function chooseWeapon(unit, target) {
     var bestIndex = 0;
     var bestDamage = 0;
 
@@ -898,6 +960,7 @@ function chooseWeapon(unit) {
         var weapon = WEAPONS[unit.weapons[i]];
         var ap = weapon[2];
         var damage = weapon[4];
+        var range = weapon[3];
 
         if (unit.ammo[i] <= 0) {
             // Ignore out of ammo
@@ -906,6 +969,11 @@ function chooseWeapon(unit) {
 
         if (ap > unit.actionPoints) {
             // Ignore out of AP
+            continue;
+        }
+
+        if (dist(unit.x, unit.y, target.x, target.y) > range) {
+            // Ignore out of range
             continue;
         }
 
@@ -921,6 +989,7 @@ function chooseWeapon(unit) {
 
 /**
  * Calculates Dijkstra's algorithm.
+ *
  * @param {!Object} source Starting point, must have x and y properties.
  * @param {!Object=} opt_dest Optional destination point, must have x and y properties.
  * @param {!number=} opt_maxDist Optional maximum distance to examine.
@@ -1012,18 +1081,19 @@ function showGameOver(playerWins) {
         html += 'You lose!';
     }
 
-    html += '</h1><br><br><table><tr><th>Name</th><th>Kills</th><th>Damage</th></tr>';
+    html += '</h1><br><br><table><tr><th>Name</th><th>Health</th><th>Damage</th><th>Kills</th></tr>';
 
     for (var i = 0; i < 12; i++) {
         var unit = units[i];
         html += '<tr>' +
                 '<td class="' + (unit.team?'blue':'red') + '">' + unit.name + '</td>' +
-                '<td>' + unit.kills + '</td>' +
+                '<td>' + unit.health + '</td>' +
                 '<td>' + unit.damage + '</td>' +
+                '<td>' + unit.kills + '</td>' +
                 '</tr>';
     }
 
-    html += '</table>';
+    html += '</table><br><br><a href="javascript:showTitle()">Main Menu</a>';
 
     var el = $('#go');
     el.innerHTML = html;
@@ -1050,18 +1120,23 @@ function fs() {
     }
 }
 
-function hideTitle() {
-    $('#ti').style.display = 'none';
+function showTitle() {
+    $('#ti').style.display = 'block';
+    $('#go').style.display = 'none';
 }
 
-// Start the game
+function hideTitle() {
+    $('#ti').style.display = 'none';
+    initUnits();
+    redraw();
+    startRound();
+}
+
 initMap();
-initUnits();
-redraw();
-startRound();
 
 // Exports
 window['endTurn'] = endTurn;
 window['fs'] = fs;
+window['showTitle'] = showTitle;
 window['hideTitle'] = hideTitle;
 
