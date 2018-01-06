@@ -749,6 +749,14 @@ var AI_DONE = 0;
 var AI_VISIBLE_ACTION = 1;
 var AI_HIDDEN_ACTION = 2;
 
+/**
+ * Performs one or more iterations of AI logic.
+ *
+ * If there is a "visible action" (something that the player should see),
+ * then the method executes the action and sleeps for a short delay.
+ *
+ * For all non-visible actions, everything happens instantly.
+ */
 function doAi() {
     $('#ai').style.display = 'block';
     aiActive = true;
@@ -796,6 +804,15 @@ function doAi() {
     endRound();
 }
 
+/**
+ * Performs one iteration of AI logic for one unit.
+ *
+ * This is an intermediate method that determines if the unit should perform
+ * a "normal" action (attack or go to waypoint) or a "hide" action (seek cover).
+ *
+ * @param {!Object} unit The AI unit.
+ * @return {!number} Done, hidden action, or visible action.
+ */
 function doAi2(unit) {
     if (gameOver) {
         // Game is over
@@ -818,6 +835,12 @@ function doAi2(unit) {
     }
 }
 
+/**
+ * Performs one "normal" action such as attack or move toward waypoint.
+ *
+ * @param {!Object} unit The AI unit.
+ * @return {!number} Done, hidden action, or visible action.
+ */
 function doAi3(unit) {
     // If the AI can see a player, attack the player
     for (var i = 0; i < 6; i++) {
@@ -853,6 +876,14 @@ function doAi3(unit) {
     return AI_DONE;
 }
 
+/**
+ * Performs one "hide" action by seeking cover.
+ *
+ * The AI does slightly cheat here (sorry) by knowing whether the player can see a tile.
+ *
+ * @param {!Object} unit The AI unit.
+ * @return {!number} Done, hidden action, or visible action.
+ */
 function doAiHide(unit) {
     var xs = [0, 0, 1, 0, -1];
     var ys = [0, -1, 0, 1, 0];
@@ -980,7 +1011,9 @@ function dijkstra(source, opt_dest, opt_maxDist) {
             if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) {
                 var v = map[y][x];
                 var alt = u.dist + 1;
-                if (alt < v.dist && isEmpty(x, y) && (!opt_maxDist || alt <= opt_maxDist)) {
+                if (alt < v.dist &&
+                        ((opt_dest && opt_dest.x === v.x && opt_dest.y === v.y) || isEmpty(x, y)) &&
+                        (!opt_maxDist || alt <= opt_maxDist)) {
                     v.dist = alt;
                     v.prev = u;
                     q.push(v);
